@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Uni list</title>
+<script src="./lib/vue-2.4.0.js"></script>
+<link rel="stylesheet" href="./lib/bootstrap-3.3.7.css">
+</head>
+
+<body>
+  <div id="app">  
+    <!-- quick input: bs3-panel: primary -->
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+          <h3 class="panel-title">Add Uni</h3>
+        </div>
+        <div class="panel-body form-inline">
+          <div>
+            <label>ID:
+              <input type="text" class="form-control" v-model="id" v-color="'blue'">
+            </label>
+            <label>Name:
+              <input type="text" class="form-control" v-model="name" @keyup.enter="funAdd()" v-color="'blue'">
+            </label>
+              <input type="button" value="add" class="btn btn-primary" @click="funAdd()">
+            <label>Search:
+              <input type="text" class="form-control" v-model="keyletters" v-focus>
+            </label>
+          </div>
+        </div>
+    </div>
+    <!-- quick input: bs3-table -->
+    <table class="table table-bordered table-hover table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Ctime</th>
+          <th>Operation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item in funSearch()" :key="item.id">
+          <td>{{item.id}}</td>
+          <td>{{item.name}}</td>
+          <td>{{item.ctime|dateFormat()}}</td>
+          <td><a href="" @click.prevent="funDel(item.id)">Delete</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <script>
+    // set time format
+    Vue.filter('dateFormat', function (dateStr, pattern='') {
+      var dt = new Date (dateStr);
+      var y = dt.getFullYear();
+      var m = (dt.getMonth() + 1).toString().padStart (2,'0');
+      var d = dt.getDate().toString().padStart (2,'0');
+      if (pattern.toLowerCase() === 'yyyy-mm-dd') {return `${y}-${m}-${d}`;}
+      else{
+        var hh = dt.getHours().toString().padStart (2,'0');
+        var mm = dt.getMinutes().toString().padStart (2,'0');
+        var ss = dt.getSeconds().toString().padStart (2,'0');
+        return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+      }
+    })
+    Vue.directive ('focus', {inserted: function (el) {el.focus();}})
+    Vue.directive ('color', function (el,binding) {
+      el.style.color = binding.value;})
+    var vm = new Vue({
+    el: '#app',
+    data: {
+      id: '',
+      name: '',
+      keyletters: '',
+      
+      list:[
+        {id: 1, name: 'RUC', ctime: new Date(),},
+        {id: 2, name: 'WUC', ctime: new Date(),},
+      ],  
+    },
+    methods: {
+      // When we click the "add" button, a new item -- with the typed id and name -- will be added to the end of list. 
+      funAdd(){
+        this.list.push ({id: this.id, name: this.name, ctime: new Date(),});
+        this.id = this.name = '';
+      },
+      // When we click "delete" for one item, the index of the item will be found according to the id of this item, and this item will be deleted according to its index. 
+      funDel (id) {
+        var index = this.list.findIndex ((item) => {
+          if (item.id==id) {return true;}
+        });
+        this.list.splice (index, 1);
+      },
+      // When we type in the letters we want to search for, each item in list will be checked if it contains the typed letters. If so, this item will be added to newList; in this way newList is formed, returned and shown to us.
+      funSearch(){
+        return this.list.filter (item => {
+          if (item.name.includes (this.keyletters)) return item;
+        })       
+      },
+    }
+    });
+  </script>
+</body>
+</html>
